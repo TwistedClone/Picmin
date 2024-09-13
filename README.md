@@ -1,4 +1,4 @@
-Picmin
+***Picmin***
 
 Picmin is een applicatie die gebruikers in staat stelt om fruit te beheren en te kopen. De applicatie biedt twee rollen: "Medewerker" en "Gebruiker". Medewerkers kunnen fruit toevoegen, bewerken en verwijderen, terwijl gebruikers fruit kunnen bekijken en toevoegen aan hun winkelwagen.
 Functionaliteiten
