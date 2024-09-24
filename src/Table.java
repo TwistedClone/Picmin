@@ -1,334 +1,361 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
 import java.util.List;
 
-public class Table {
+public class Table extends Application {
 
-    // GUI components and user management
-    private static FruitManager fruitManager;  // Manages fruits in the database
-    private static JPanel fruitPanel;  // Panel for displaying fruits
-    private static JTextField nameField;  // Text field for fruit name
-    private static JTextField originField;  // Text field for country of origin
-    private static JTextField currentStockField;  // Text field for current stock
-    private static JButton addButton;  // Button to add or update fruit
-    private static JScrollPane scrollPane;  // Scroll bar to browse the fruit panel
+    private static FruitManager fruitManager;
+    private static ProductManager productManager;  // Use ProductManager instead of ProductDAO
+    private static VBox fruitPanel;
+    private static TextField nameField;
+    private static ComboBox<String> countryComboBox;
+    private static ComboBox<Product> productComboBox;  // ComboBox for Product selection
+    private static TextField currentStockField;
+    private static Button addButton;
+    private static Button deleteButton;  // New delete button
+    private static ScrollPane scrollPane;
 
-    // Search and language settings
-    private static JTextField searchField;  // Search field for fruit
-    private static JButton searchButton;    // Search button
-    private static JButton logoutButton;    // Logout button
-    private static JToggleButton languageToggle; // Language toggle button
+    private static TextField searchField;
+    private static Button logoutButton;
+    private static ToggleButton languageToggle;
 
-    // For cart functionality (for users)
-    private static JPanel cartPanel; // Panel for cart
-    private static JButton addToCartButton; // Button to add fruits to cart
+    private static Fruit selectedFruit = null;
+    private static boolean isEnglish = true;
+    private static String currentUserRole;  // Store the role of the logged-in user
 
-    // Variables to track selected fruit and row
-    private static Fruit selectedFruit = null; // Tracks selected fruit for editing
-    private static JPanel selectedPanel = null; // Tracks the selected row for highlighting
+    // Track the currently selected panel to un-highlight the previous one
+    private static HBox selectedPanel = null;
 
-    // Language and user role settings
-    private static boolean isEnglish = true; // Current language (default: English)
-    private static boolean isMedewerker;  // Indicates whether the current user is a Medewerker
-
-    // Method for Medewerker with full access
-    public static void showTableForMedewerker() {
-        setupFrame(true);  // Enable adding/updating fruits
+    @Override
+    public void start(Stage primaryStage) {
+        // Example: starting with the User role. Modify this based on the LoginPage logic.
+        showTable(primaryStage, "User");  // Default to User role for now
     }
 
-    // Method for users with limited access
-    public static void showTableForUser() {
-        setupFrame(false); // Disable adding/updating fruits
+    // Method to show the table based on the user's role
+    public void showTable(Stage primaryStage, String role) {
+        currentUserRole = role;  // Store the user's role
+        setupStage(primaryStage);
     }
 
-    // Common setup for both roles
-    private static void setupFrame(boolean medewerker) {
-        isMedewerker = medewerker;  // Store isMedewerker as a class-level variable
-        fruitManager = new FruitManager();  // Initialize FruitManager for database access
+    private void setupStage(Stage primaryStage) {
+        fruitManager = new FruitManager();
+        productManager = new ProductManager();  // Initialize ProductManager
 
-        // Create the main window with the correct title based on the role and language
-        JFrame frame = new JFrame(isMedewerker ? (isEnglish ? "Medewerker - Fruit Table" : "Medewerker - Fruittafel") : (isEnglish ? "User - Fruit Table" : "Gebruiker - Fruittafel"));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 700);
-        frame.setLayout(new BorderLayout());
+        primaryStage.setTitle(getTitleForRole());
 
-        JPanel inputPanel = new JPanel(new GridBagLayout());  // Input panel with a grid layout
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = GridBagConstraints.WEST;
+        BorderPane root = new BorderPane();
+        VBox inputPanel = new VBox(10);
+        inputPanel.setPadding(new Insets(10));
+        inputPanel.setSpacing(10);
+        inputPanel.setStyle("-fx-background-color: #f4f4f4;");
 
-        // Logout button at the top left
-        logoutButton = new JButton(isEnglish ? "Logout" : "Uitloggen");
-        c.gridx = 0;
-        c.gridy = 0;
-        inputPanel.add(logoutButton, c);
-        logoutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();  // Close the current window
-                LoginPage.main(null);  // Go back to the login screen
+        // Logout Button
+        logoutButton = new Button(isEnglish ? "Logout" : "Uitloggen");
+        logoutButton.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;");
+        logoutButton.setOnAction(e -> {
+            primaryStage.close();  // Close the table screen
+            showLoginPage();       // Return to the login page
+        });
+
+        // Show admin/medewerker controls
+        if (isAdminOrMedewerker()) {
+            addAdminOrMedewerkerControls(inputPanel);
+        }
+
+
+
+        fruitPanel = new VBox(10);
+        fruitPanel.setPadding(new Insets(10));
+
+        scrollPane = new ScrollPane(fruitPanel);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background-color: #ffffff;");
+
+        // Load fruit data and add to panel
+        addTableHeader();
+        loadFruits();
+
+        searchField = new TextField();
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.trim().isEmpty()) {
+                loadFruits();  // Show all fruits if the search field is empty
+            } else {
+                loadFruitsWithSearch(newValue.trim().toLowerCase());
             }
         });
 
-        // Input fields (visible only to Medewerkers)
-        if (isMedewerker) {
-            JLabel nameLabel = new JLabel(isEnglish ? "Fruit Name:" : "Fruit Naam:");
-            nameField = new JTextField(20);
+        languageToggle = new ToggleButton(isEnglish ? "Switch to Dutch" : "Wissel naar Engels");
+        languageToggle.setOnAction(e -> {
+            isEnglish = !isEnglish;
+            primaryStage.close();
+            showTable(new Stage(), currentUserRole);  // Reload based on the current role
+        });
 
-            JLabel originLabel = new JLabel(isEnglish ? "Country of Origin:" : "Land van herkomst:");
-            originField = new JTextField(20);
+        HBox searchPanel = new HBox(10, languageToggle, searchField, logoutButton );  // Add logout button here
+        searchPanel.setPadding(new Insets(10));
 
-            JLabel currentStockLabel = new JLabel(isEnglish ? "Current Stock:" : "Huidige voorraad:");
-            currentStockField = new JTextField(20);
-
-            addButton = new JButton(isEnglish ? "Add Fruit" : "Fruit Toevoegen");
-
-            // Add input fields and button to the input panel
-            c.gridx = 0;
-            c.gridy = 1;
-            inputPanel.add(nameLabel, c);
-            c.gridx = 1;
-            inputPanel.add(nameField, c);
-            c.gridx = 0;
-            c.gridy = 2;
-            inputPanel.add(originLabel, c);
-            c.gridx = 1;
-            inputPanel.add(originField, c);
-            c.gridx = 0;
-            c.gridy = 3;
-            inputPanel.add(currentStockLabel, c);
-            c.gridx = 1;
-            inputPanel.add(currentStockField, c);
-            c.gridx = 1;
-            c.gridy = 4;
-            inputPanel.add(addButton, c);
+        if (isAdmin()) {
+            Button adminDashboardButton = new Button(isEnglish ? "Admin Dashboard" : "Admin Dashboard");
+            adminDashboardButton.setStyle("-fx-background-color: #007bff; -fx-text-fill: white;");
+            adminDashboardButton.setOnAction(e -> openAdminDashboard());
+            searchPanel.getChildren().add(adminDashboardButton);  // Add button to the searchPanel
         }
 
-        // Panel for displaying fruits
-        fruitPanel = new JPanel();
-        fruitPanel.setLayout(new BoxLayout(fruitPanel, BoxLayout.Y_AXIS));
-        addTableHeader();  // Add table header
+        if (isAdminOrMedewerker()) {
+            Button manageProductsButton = new Button(isEnglish ? "Create a Product" : "Maak een Product");
+            manageProductsButton.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;");
+            manageProductsButton.setOnAction(e -> openProductEditScreen());  // Redirect to ProductEditScreen
+            searchPanel.getChildren().add(manageProductsButton);
+        }
 
-        scrollPane = new JScrollPane(fruitPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setPreferredSize(new Dimension(600, 400));
+        root.setTop(inputPanel);
+        root.setCenter(scrollPane);
+        root.setBottom(searchPanel);
 
-        // Load existing fruits from the database and add them to the panel
-        List<Fruit> fruits = fruitManager.getFruits();  // Get all fruits from the database
+        Scene scene = new Scene(root, 800, 1000);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // Add a button for Admin Dashboard
+
+
+    private void openAdminDashboard() {
+        Stage adminStage = new Stage();
+        // Pass the User object with the correct role type (User.Role)
+        AdminDashboard adminDashboard = new AdminDashboard(new User("admin", "adminpass", User.Role.ADMIN));
+        adminDashboard.start(adminStage);
+    }
+
+    // Show controls for Admin/Medewerker roles
+    private void addAdminOrMedewerkerControls(VBox inputPanel) {
+        Label nameLabel = new Label(isEnglish ? "Fruit Name:" : "Fruit Naam:");
+        nameField = new TextField();
+
+        // Country Dropdown
+        Label originLabel = new Label(isEnglish ? "Country of Origin:" : "Land van herkomst:");
+        countryComboBox = new ComboBox<>();
+        countryComboBox.getItems().addAll(Country.getAllCountries());
+        countryComboBox.setPromptText(isEnglish ? "Select a country" : "Selecteer een land");
+
+        // Product Dropdown
+        Label productLabel = new Label(isEnglish ? "Product:" : "Product:");
+        productComboBox = new ComboBox<>();
+        productComboBox.getItems().addAll(productManager.getProducts());  // Populate with products
+        productComboBox.setPromptText(isEnglish ? "Select a product" : "Selecteer een product");
+
+        Label currentStockLabel = new Label(isEnglish ? "Current Stock:" : "Huidige voorraad:");
+        currentStockField = new TextField();
+
+        addButton = new Button(isEnglish ? "Add Fruit" : "Fruit Toevoegen");
+        addButton.setStyle("-fx-background-color: #5cb85c; -fx-text-fill: white;");
+        addButton.setOnAction(e -> addOrUpdateFruit());
+
+        // Create the delete button (initially hidden)
+        deleteButton = new Button(isEnglish ? "Delete Fruit" : "Verwijder Fruit");
+        deleteButton.setStyle("-fx-background-color: #d9534f; -fx-text-fill: white;");
+        deleteButton.setVisible(false);  // Initially hidden
+        deleteButton.setOnAction(e -> deleteSelectedFruit());
+
+        inputPanel.getChildren().addAll(nameLabel, nameField, originLabel, countryComboBox, productLabel, productComboBox, currentStockLabel, currentStockField, addButton, deleteButton);
+    }
+
+    private String getTitleForRole() {
+        if (isAdminOrMedewerker()) {
+            return isEnglish ? "Admin/Medewerker - Fruit Table" : "Admin/Medewerker - Fruittafel";
+        } else {
+            return isEnglish ? "User - Fruit Table" : "Gebruiker - Fruittafel";
+        }
+    }
+
+    private boolean isAdminOrMedewerker() {
+        return "Admin".equalsIgnoreCase(currentUserRole) || "Medewerker".equalsIgnoreCase(currentUserRole);
+    }
+
+    private boolean isAdmin() {
+        return "Admin".equalsIgnoreCase(currentUserRole);
+    }
+
+    // Load all fruits and display them
+    private void loadFruits() {
+        fruitPanel.getChildren().clear();  // Clear the previous fruit rows
+        addTableHeader();  // Add the header again
+        List<Fruit> fruits = fruitManager.getFruits();  // Fetch fruits from the manager
+
         for (Fruit fruit : fruits) {
             addFruitToPanel(fruit);  // Add each fruit to the panel
         }
+    }
 
-        // Add/update fruit functionality for Medewerkers
-        if (isMedewerker) {
-            addButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // Get input values
-                    String name = nameField.getText();
-                    String origin = originField.getText();
-                    int currentStock;
+    // Load fruits that match the search term
+    private void loadFruitsWithSearch(String searchTerm) {
+        fruitPanel.getChildren().clear();  // Clear the previous fruit rows
+        addTableHeader();  // Add the header again
 
-                    // Check if the stock value is valid
-                    try {
-                        currentStock = Integer.parseInt(currentStockField.getText());
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(frame, isEnglish ? "Please enter a valid stock number." : "Voer een geldig voorraadnummer in.", isEnglish ? "Invalid Input" : "Ongeldige invoer", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+        // Fetch fruits from the manager
+        List<Fruit> fruits = fruitManager.getFruits();
 
-                    // Determine if the fruit is available based on stock
-                    boolean isAvailable = currentStock > 0;
+        // Filter the fruits that match the search term (name or origin)
+        List<Fruit> filteredFruits = fruits.stream()
+                .filter(fruit -> fruit.getName().toLowerCase().contains(searchTerm) ||
+                        fruit.getOrigin().toLowerCase().contains(searchTerm))
+                .toList();
 
-                    // Add new fruit or update existing fruit
-                    if (selectedFruit == null) {
-                        Fruit fruit = new Fruit(name, isAvailable, origin, currentStock);
-                        fruitManager.addFruit(fruit);  // Add fruit to database
-                        addFruitToPanel(fruit);
-                    } else {
-                        fruitManager.updateFruit(selectedFruit, name, isAvailable, origin, currentStock);
-                        updateFruitPanel();  // Refresh the fruit display
-                        selectedFruit = null;
-                        addButton.setText(isEnglish ? "Add Fruit" : "Fruit Toevoegen");
-                    }
+        // Add the filtered fruits to the panel
+        for (Fruit fruit : filteredFruits) {
+            addFruitToPanel(fruit);
+        }
 
-                    resetFields();  // Reset input fields
-                }
-            });
+        if (filteredFruits.isEmpty()) {
+            Label noResultsLabel = new Label(isEnglish ? "No fruits found" : "Geen vruchten gevonden");
+            fruitPanel.getChildren().add(noResultsLabel);  // Show a message if no fruits are found
+        }
+    }
+
+    private void addTableHeader() {
+        HBox headerPanel = new HBox();
+        headerPanel.setPadding(new Insets(10));
+        headerPanel.setStyle("-fx-background-color: #e0e0e0;");
+
+        Label nameHeader = new Label(isEnglish ? "Name" : "Naam");
+        nameHeader.setPrefWidth(100);
+        Label availableHeader = new Label(isEnglish ? "Available" : "Beschikbaar");
+        availableHeader.setPrefWidth(100);
+        Label originHeader = new Label(isEnglish ? "Origin" : "Herkomst");
+        originHeader.setPrefWidth(100);
+        Label stockHeader = new Label(isEnglish ? "Stock" : "Voorraad");
+        stockHeader.setPrefWidth(100);
+        Label productHeader = new Label(isEnglish ? "Product" : "Product");
+        productHeader.setPrefWidth(100);  // Add a new header for Product
+
+        headerPanel.getChildren().addAll(nameHeader, availableHeader, originHeader, stockHeader, productHeader);
+        fruitPanel.getChildren().add(headerPanel);  // Add the header to the fruit panel
+    }
+
+    private void addFruitToPanel(Fruit fruit) {
+        HBox fruitEntryPanel = new HBox(10);
+        fruitEntryPanel.setPadding(new Insets(5));
+        fruitEntryPanel.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #cccccc;");
+
+
+
+        Label nameLabel = new Label(fruit.getName());
+        nameLabel.setPrefWidth(100);
+        Label availableLabel = new Label(fruit.isAvailable() ? (isEnglish ? "Yes" : "Ja") : (isEnglish ? "No" : "Nee"));
+        availableLabel.setPrefWidth(100);
+        if (fruit.isAvailable()) {
+            availableLabel.setStyle("-fx-text-fill: green;");
         } else {
-            // Cart functionality for users
-            cartPanel = new JPanel();
-            addToCartButton = new JButton(isEnglish ? "Add to Cart" : "Voeg toe aan winkelwagen");
-            c.gridx = 1;
-            c.gridy = 6;
-            cartPanel.add(addToCartButton);
-            inputPanel.add(cartPanel, c);
+            availableLabel.setStyle("-fx-text-fill: red;");
         }
 
-        // Search field and button at the bottom of the table
-        searchField = new JTextField(20);
-        searchButton = new JButton(isEnglish ? "Search" : "Zoeken");
+        Label originLabel = new Label(fruit.getOrigin());
+        originLabel.setPrefWidth(100);
+        Label stockLabel = new Label(String.valueOf(fruit.getCurrentStock()));
+        stockLabel.setPrefWidth(100);
+        Label productLabel = new Label(fruit.getProduct().getName());  // Display the product name
+        productLabel.setPrefWidth(100);
 
-        // Language toggle button
-        languageToggle = new JToggleButton(isEnglish ? "Switch to Dutch" : "Wissel naar Engels");
-        languageToggle.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                isEnglish = !isEnglish;  // Toggle between English and Dutch
-                frame.dispose();  // Close the current window
-                if (isMedewerker) {
-                    showTableForMedewerker();  // Reload with the selected language
-                } else {
-                    showTableForUser();
-                }
+        // Add action to select this fruit for editing and show delete button
+        fruitEntryPanel.setOnMouseClicked(event -> {
+            if (selectedPanel != null) {
+                selectedPanel.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #cccccc;");
             }
+
+            // Mark the clicked fruit entry as selected
+            selectedPanel = fruitEntryPanel;
+            selectedPanel.setStyle("-fx-background-color: #d3d3d3; -fx-border-color: #cccccc;");
+
+            selectedFruit = fruit;
+            nameField.setText(fruit.getName());
+            countryComboBox.setValue(fruit.getOrigin());
+            productComboBox.setValue(fruit.getProduct());  // Set the ComboBox value to the fruit's product
+            currentStockField.setText(String.valueOf(fruit.getCurrentStock()));
+            addButton.setText(isEnglish ? "Update Fruit" : "Fruit Bijwerken");
+
+            deleteButton.setVisible(true);  // Show the delete button when a fruit is selected
         });
 
-        // Panel for search and language toggle buttons
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        bottomPanel.add(languageToggle);
-        bottomPanel.add(new JLabel(isEnglish ? "Search:" : "Zoeken:"));
-        bottomPanel.add(searchField);
-        bottomPanel.add(searchButton);
-
-        // Search button functionality
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String searchTerm = searchField.getText().trim().toLowerCase();
-                searchFruits(searchTerm);  // Search for fruits
-            }
-        });
-
-        // Add components to the main window
-        frame.add(inputPanel, BorderLayout.NORTH);
-        frame.add(scrollPane, BorderLayout.CENTER);
-        frame.add(bottomPanel, BorderLayout.SOUTH);  // Search and language toggle buttons at the bottom
-
-        frame.setVisible(true);  // Show the window
+        fruitEntryPanel.getChildren().addAll(nameLabel, availableLabel, originLabel, stockLabel, productLabel);
+        fruitPanel.getChildren().add(fruitEntryPanel);  // Add the fruit row to the fruit panel
     }
 
-    // Method to add the table header
-    private static void addTableHeader() {
-        JPanel headerPanel = new JPanel(new GridLayout(1, isMedewerker ? 5 : 4)); // 5 columns for medewerker, 4 for user
-        headerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    private void addOrUpdateFruit() {
+        // Add or update fruit depending on whether a fruit is selected for updating
+        String name = nameField.getText();
+        String origin = countryComboBox.getValue();  // Get the selected country from the ComboBox
+        Product product = productComboBox.getValue();  // Get the selected product from the ComboBox
+        int currentStock;
 
-        JLabel nameHeader = new JLabel(isEnglish ? "Name" : "Naam", SwingConstants.CENTER);
-        JLabel availableHeader = new JLabel(isEnglish ? "Available" : "Beschikbaar", SwingConstants.CENTER);
-        JLabel originHeader = new JLabel(isEnglish ? "Origin" : "Herkomst", SwingConstants.CENTER);
-        JLabel currentStockHeader = new JLabel(isEnglish ? "Stock" : "Voorraad", SwingConstants.CENTER);
-
-        headerPanel.add(nameHeader);
-        headerPanel.add(availableHeader);
-        headerPanel.add(originHeader);
-        headerPanel.add(currentStockHeader);
-
-        // Add "Actions" column only for Medewerkers
-        if (isMedewerker) {
-            JLabel actionHeader = new JLabel(isEnglish ? "Actions" : "Acties", SwingConstants.CENTER);
-            headerPanel.add(actionHeader);
+        try {
+            currentStock = Integer.parseInt(currentStockField.getText());
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, isEnglish ? "Invalid Input" : "Ongeldige invoer", isEnglish ? "Please enter a valid stock number." : "Voer een geldig voorraadnummer in.");
+            return;
         }
 
-        headerPanel.setPreferredSize(new Dimension(600, 30)); // Set a fixed height for the headers
-        headerPanel.setMaximumSize(new Dimension(600, 30));
+        boolean isAvailable = currentStock > 0;
 
-        fruitPanel.add(headerPanel);  // Add the header panel to the fruit panel
-    }
-
-    // Method to reset input fields
-    private static void resetFields() {
-        nameField.setText("");
-        originField.setText("");
-        currentStockField.setText("");
-    }
-
-    // Method to add fruit to the fruit panel
-    private static void addFruitToPanel(Fruit fruit) {
-        JPanel fruitEntryPanel = new JPanel(new GridLayout(1, isMedewerker ? 5 : 4));  // 5 columns for medewerker, 4 for user
-        fruitEntryPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-
-        JLabel nameLabel = new JLabel(fruit.getName(), SwingConstants.CENTER);
-        JLabel availableLabel = new JLabel(fruit.isAvailable() ? (isEnglish ? "Yes" : "Ja") : (isEnglish ? "No" : "Nee"), SwingConstants.CENTER);
-        JLabel originLabel = new JLabel(fruit.getOrigin(), SwingConstants.CENTER);
-        JLabel stockLabel = new JLabel(String.valueOf(fruit.getCurrentStock()), SwingConstants.CENTER);
-
-        // Add the labels to the fruit panel
-        fruitEntryPanel.add(nameLabel);
-        fruitEntryPanel.add(availableLabel);
-        fruitEntryPanel.add(originLabel);
-        fruitEntryPanel.add(stockLabel);
-
-        // Add "Delete" button for Medewerkers
-        if (isMedewerker) {
-            JButton deleteButton = new JButton(isEnglish ? "Delete" : "Verwijderen");
-            deleteButton.setPreferredSize(new Dimension(80, 20));  // Set a fixed size for the delete button
-
-            // Delete fruit functionality
-            deleteButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    fruitManager.deleteFruit(fruit);  // Remove fruit from the database
-                    updateFruitPanel();  // Refresh the fruit display
-                }
-            });
-
-            fruitEntryPanel.add(deleteButton);  // Add the delete button to the fruit panel
+        if (selectedFruit == null) {
+            // Adding a new fruit
+            Fruit fruit = new Fruit(name, isAvailable, origin, currentStock, product);  // Include the product
+            fruitManager.addFruit(fruit);  // Add to the database
+        } else {
+            // Updating an existing fruit
+            fruitManager.updateFruit(selectedFruit, name, isAvailable, origin, currentStock, product);
+            selectedFruit = null;
+            addButton.setText(isEnglish ? "Add Fruit" : "Fruit Toevoegen");
         }
 
-        fruitEntryPanel.setPreferredSize(new Dimension(600, 30)); // Set a fixed size for each row
-        fruitEntryPanel.setMaximumSize(new Dimension(600, 30));
-
-        // Click functionality to select row for editing
-        fruitEntryPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                highlightRow(fruitEntryPanel);  // Highlight the selected row
-                selectedFruit = fruit;  // Track selected fruit
-                nameField.setText(fruit.getName());
-                originField.setText(fruit.getOrigin());
-                currentStockField.setText(String.valueOf(fruit.getCurrentStock()));
-                addButton.setText(isEnglish ? "Update Fruit" : "Fruit Bijwerken");
-            }
-        });
-
-        fruitPanel.add(fruitEntryPanel);  // Add the fruit panel to the GUI
-        fruitPanel.revalidate();
-        fruitPanel.repaint();
+        resetFields();
+        loadFruits();  // Refresh the fruit list
     }
 
-    // Method to search for fruits based on name or origin
-    private static void searchFruits(String searchTerm) {
-        fruitPanel.removeAll();  // Remove all existing rows
-        addTableHeader();  // Add the table header again
-        for (Fruit fruit : fruitManager.getFruits()) {
-            // Check if the name or origin matches the search term
-            if (fruit.getName().toLowerCase().contains(searchTerm) ||
-                    fruit.getOrigin().toLowerCase().contains(searchTerm)) {
-                addFruitToPanel(fruit);  // Add fruit to the panel
-            }
+    private void deleteSelectedFruit() {
+        if (selectedFruit != null) {
+            fruitManager.deleteFruit(selectedFruit);  // Call the delete method in FruitManager
+            selectedFruit = null;
+            resetFields();
+            loadFruits();  // Refresh the list after deletion
+            deleteButton.setVisible(false);  // Hide the delete button after deletion
         }
-        fruitPanel.revalidate();
-        fruitPanel.repaint();
     }
 
-    // Method to highlight the selected row
-    private static void highlightRow(JPanel panel) {
-        if (selectedPanel != null) {
-            selectedPanel.setBackground(null);  // Reset background of previous selection
-        }
-        panel.setBackground(Color.LIGHT_GRAY);  // Highlight the current selected row
-        selectedPanel = panel;
+    private void resetFields() {
+        nameField.clear();
+        countryComboBox.setValue(null);  // Clear the selected value in ComboBox
+        productComboBox.setValue(null);  // Clear the selected product
+        currentStockField.clear();
+        selectedFruit = null;
+        deleteButton.setVisible(false);  // Hide the delete button when no fruit is selected
     }
 
-    // Method to update the fruit panel after editing or deleting
-    private static void updateFruitPanel() {
-        fruitPanel.removeAll();  // Remove all fruit data
-        addTableHeader();  // Add the table header again
-        for (Fruit fruit : fruitManager.getFruits()) {
-            addFruitToPanel(fruit);  // Add each fruit back to the panel
-        }
-        fruitPanel.revalidate();
-        fruitPanel.repaint();
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showLoginPage() {
+        // Go back to login page
+        Stage loginStage = new Stage();
+        new LoginPage().start(loginStage);
+    }
+
+    private void openProductEditScreen() {
+        Stage productStage = new Stage();
+        ProductEditScreen productEditScreen = new ProductEditScreen(productManager);
+        productEditScreen.start(productStage);
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

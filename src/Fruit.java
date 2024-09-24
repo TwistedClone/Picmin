@@ -1,28 +1,32 @@
 public class Fruit {
-    private int id;  // Unique ID for each fruit (used for database operations)
+
+    private int id;  // Unieke ID voor elke vrucht (gebruikt voor database)
     private String name;
     private boolean available;
     private String origin;
     private int current_stock;
+    private Product product;  // Added field for associated Product
 
-    // Constructor without id (used when creating a new fruit)
-    public Fruit(String fruitName, boolean isAvailable, String countryOfOrigin, int currentStock) {
+    // Constructor zonder ID (Word gebruikt voor creatie van de vrucht)
+    public Fruit(String fruitName, boolean isAvailable, String countryOfOrigin, int currentStock, Product product) {
         this.name = fruitName;
         this.available = isAvailable;
         this.origin = countryOfOrigin;
         this.current_stock = currentStock;
+        this.product = product;  // Set the associated Product
     }
 
-    // Constructor with id (used when retrieving from the database)
-    public Fruit(int id, String fruitName, boolean isAvailable, String countryOfOrigin, int currentStock) {
+    // Constructor met ID (Opzoeken in database)
+    public Fruit(int id, String name, boolean available, String origin, int currentStock, Product product) {
         this.id = id;
-        this.name = fruitName;
-        this.available = isAvailable;
-        this.origin = countryOfOrigin;
+        this.name = name;
+        this.available = available;
+        this.origin = origin;
         this.current_stock = currentStock;
+        this.product = product;
     }
 
-    // Getters and setters for all fields
+    // Getters en setters voor alle velden
     public int getId() {
         return id;
     }
@@ -63,8 +67,16 @@ public class Fruit {
         this.current_stock = current_stock;
     }
 
-    // Display fruit details (for UI)
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    // Display fruit details (voor de UI)
     public String displayFruit() {
-        return String.format("%-15s %-15s %-15s %-20s", this.name, this.available ? "Yes" : "No", this.origin, this.current_stock);
+        return String.format("%-15s %-15s %-15s %-20s %-20s", this.name, this.available ? "Yes" : "No", this.origin, this.current_stock, this.product.getName());
     }
 }

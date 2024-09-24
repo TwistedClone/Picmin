@@ -6,10 +6,10 @@ import java.sql.Statement;
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:fruits.db";
 
-    // Initialize the database and create the table
+    // Initializeer de database en maak de table aan
     public static void initializeDatabase() {
         try {
-            // Manually load the SQLite driver
+            // Handmatig de SQLite driver laden
             Class.forName("org.sqlite.JDBC");
 
             try (Connection conn = connect();
@@ -22,7 +22,7 @@ public class DatabaseManager {
                             + "origin TEXT NOT NULL,"
                             + "stock INTEGER NOT NULL"
                             + ");";
-                    stmt.execute(createTableSQL);  // Create the Fruits table
+                    stmt.execute(createTableSQL);  // Maak de Fruits Table aan
                     System.out.println("Database has been initialized.");
                 }
             }
@@ -34,7 +34,7 @@ public class DatabaseManager {
         }
     }
 
-    // Method to connect to the database
+    // Verbinding maken met de database
     public static Connection connect() throws SQLException {
         return DriverManager.getConnection(DB_URL);
     }

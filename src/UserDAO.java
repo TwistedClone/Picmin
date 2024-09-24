@@ -1,100 +1,128 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
     private static final String DB_URL = "jdbc:sqlite:your_database.db";
 
-    // Constructor om de database te initialiseren en de gebruikers tabel te maken als deze nog niet bestaat
     public UserDAO() {
-        createUsersTable();  // Roep de methode aan om de users-tabel te maken
+        createUsersTable();
     }
 
-    // Methode om de users-tabel te maken
+    // Create the users table if it doesn't exist
     private void createUsersTable() {
         String sql = "CREATE TABLE IF NOT EXISTS users (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +  // Unieke ID voor elke gebruiker
-                "username TEXT NOT NULL, " +  // Gebruikersnaam van de gebruiker
-                "password TEXT NOT NULL, " +  // Wachtwoord van de gebruiker
-                "role TEXT NOT NULL);";  // Rol van de gebruiker (bijv. Medewerker of Gebruiker)
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "username TEXT NOT NULL, " +
+                "password TEXT NOT NULL, " +
+                "role TEXT NOT NULL);";
 
-        // Maak verbinding met de database en voer het SQL-commando uit om de tabel te maken
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.executeUpdate();  // Voer de SQL-update uit
-            System.out.println("Users table created or already exists.");  // Tabel is gemaakt of bestaat al
-
+            pstmt.executeUpdate();
+            System.out.println("Users table created or already exists.");
         } catch (SQLException e) {
-            System.out.println("Error creating users table: " + e.getMessage());  // Foutmelding als het maken van de tabel mislukt
+            System.out.println("Error creating users table: " + e.getMessage());
         }
     }
 
-    // Methode om een nieuwe gebruiker op te slaan in de database
+    // Save a user in the database
     public void saveUser(User user) {
-        String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";  // SQL-commando om een nieuwe gebruiker in te voegen
+        String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
 
-        // Maak verbinding met de database en stel de waarden in voor de gebruikersinvoer
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, user.getUsername());  // Zet de gebruikersnaam
-            pstmt.setString(2, user.getPassword());  // Zet het wachtwoord
-            pstmt.setString(3, user.getRole());  // Zet de gebruikersrol
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getRole().name());  // Store the enum name (e.g., "ADMIN", "USER")
 
-            pstmt.executeUpdate();  // Voer de SQL-update uit om de gebruiker op te slaan
-            System.out.println("User saved successfully!");  // Bevestigingsbericht dat de gebruiker is opgeslagen
-
+            pstmt.executeUpdate();
+            System.out.println("User saved successfully!");
         } catch (SQLException e) {
-            System.out.println("Error saving user: " + e.getMessage());  // Foutmelding bij het opslaan van de gebruiker
+            System.out.println("Error saving user: " + e.getMessage());
         }
     }
 
-    // Methode om een gebruiker te authentiseren door de gebruikersnaam en het wachtwoord te controleren
+    // Authenticate the user by checking the username and password
     public User authenticate(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";  // SQL-query om de gebruiker te zoeken op basis van gebruikersnaam en wachtwoord
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-        // Maak verbinding met de database en stel de gebruikersnaam en het wachtwoord in voor de query
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, username);  // Zet de gebruikersnaam
-            pstmt.setString(2, password);  // Zet het wachtwoord
-            ResultSet rs = pstmt.executeQuery();  // Voer de query uit en bewaar de resultaten
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                String role = rs.getString("role");  // Haal de rol van de gebruiker op
-                return new User(username, password, role);  // Retourneer de geauthentiseerde gebruiker
+                String role = rs.getString("role").toUpperCase();  // Convert the role to uppercase
+                return new User(username, password, User.Role.valueOf(role));
             }
 
         } catch (SQLException e) {
-            System.out.println("Error during authentication: " + e.getMessage());  // Foutmelding bij het authenticeren
+            System.out.println("Error during authentication: " + e.getMessage());
         }
-        return null;  // Gebruiker niet gevonden of authenticatie mislukt
+        return null;
     }
 
-    // Methode om een gebruiker te vinden op basis van de gebruikersnaam
-    public User findUserByUsername(String username) {
-        String sql = "SELECT * FROM users WHERE username = ?";  // SQL-query om een gebruiker te zoeken op basis van gebruikersnaam
+    // Fetch all users from the database
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users";
 
-        // Maak verbinding met de database en stel de gebruikersnaam in voor de query
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String password = rs.getString("password");
+                String role = rs.getString("role").toUpperCase();  // Convert the role to uppercase
+                users.add(new User(username, password, User.Role.valueOf(role)));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching users: " + e.getMessage());
+        }
+        return users;
+    }
+
+
+    // Update the role of a user
+    public void updateUserRole(String username, User.Role newRole) {
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, username);  // Zet de gebruikersnaam
-            ResultSet rs = pstmt.executeQuery();  // Voer de query uit en bewaar de resultaten
+            pstmt.setString(1, newRole.name());  // Use the enum's name for storing
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Error updating user role: " + e.getMessage());
+        }
+    }
+
+    // Find a user by their username
+    public User findUserByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                String password = rs.getString("password");  // Haal het wachtwoord van de gebruiker op
-                String role = rs.getString("role");  // Haal de rol van de gebruiker op
-                return new User(username, password, role);  // Retourneer de gevonden gebruiker
+                String password = rs.getString("password");
+                String role = rs.getString("role");
+                return new User(username, password, User.Role.valueOf(role));  // Convert role string back to enum
             }
 
         } catch (SQLException e) {
-            System.out.println("Error finding user: " + e.getMessage());  // Foutmelding bij het zoeken van de gebruiker
+            System.out.println("Error finding user: " + e.getMessage());
         }
-        return null;  // Gebruiker niet gevonden
+        return null;
     }
 }

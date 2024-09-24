@@ -7,26 +7,27 @@ public class FruitManager {
         this.fruitDAO = new FruitDAO();
     }
 
-    // Add a new fruit
+    // Voeg een nieuwe fruit toe
     public void addFruit(Fruit fruit) {
         fruitDAO.saveFruit(fruit);
     }
 
-    // Update an existing fruit
-    public void updateFruit(Fruit fruit, String name, boolean isAvailable, String origin, int currentStock) {
+    // Bewerk een bestaande fruit
+    public void updateFruit(Fruit fruit, String name, boolean isAvailable, String origin, int currentStock, Product product) {
         fruit.setName(name);
         fruit.setAvailable(isAvailable);
         fruit.setOrigin(origin);
         fruit.setCurrentStock(currentStock);
+        fruit.setProduct(product);  // Update the product
         fruitDAO.updateFruit(fruit);
     }
 
-    // Get all fruits
+    // Haal alle fruit op (get)
     public List<Fruit> getFruits() {
         return fruitDAO.getFruits();
     }
 
-    // Delete a fruit
+    // Verwijder een fruit (delete)
     public void deleteFruit(Fruit fruit) {
         fruitDAO.deleteFruit(fruit.getId());
     }

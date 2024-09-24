@@ -1,119 +1,132 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
-public class LoginPage {
+public class LoginPage extends Application {
+
     private static UserDAO userDAO = new UserDAO();  // DAO to interact with the database
 
-    public static void main(String[] args) {
-        JFrame loginFrame = new JFrame("Login & Register");
-        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginFrame.setSize(300, 200);
-        loginFrame.setLayout(new GridLayout(4, 2));
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Login & Register");
 
-        // Login form
-        JLabel userLabel = new JLabel("Username:");
-        JTextField userTextField = new JTextField(20);
+        // Layout for the login form
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setHgap(10);
+        grid.setVgap(10);
 
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField passwordField = new JPasswordField(20);
+        // Login form components
+        Label userLabel = new Label("Username:");
+        TextField userTextField = new TextField();
 
-        JButton loginButton = new JButton("Login");
-        JButton registerButton = new JButton("Register");
+        Label passwordLabel = new Label("Password:");
+        PasswordField passwordField = new PasswordField();
 
-        loginFrame.add(userLabel);
-        loginFrame.add(userTextField);
-        loginFrame.add(passwordLabel);
-        loginFrame.add(passwordField);
-        loginFrame.add(loginButton);
-        loginFrame.add(registerButton);
+        Button loginButton = new Button("Login");
+        Button registerButton = new Button("Register");
 
-        // Login action
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = userTextField.getText();
-                String password = new String(passwordField.getPassword());
+        // Add components to grid layout
+        grid.add(userLabel, 0, 0);
+        grid.add(userTextField, 1, 0);
+        grid.add(passwordLabel, 0, 1);
+        grid.add(passwordField, 1, 1);
+        grid.add(loginButton, 1, 2);
+        grid.add(registerButton, 1, 3);
 
-                // Authenticate the user using the database
-                User user = userDAO.authenticate(username, password);
-                if (user != null) {
-                    // Redirect based on role
-                    loginFrame.dispose(); // Close the login window
-                    if (user.getRole().equals("Medewerker")) {
-                        Table.showTableForMedewerker();  // Full access
-                    } else {
-                        Table.showTableForUser();  // Limited access
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(loginFrame, "Invalid credentials", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                }
+        loginButton.setOnAction(e -> {
+            String username = userTextField.getText();
+            String password = passwordField.getText();
+
+            // Authenticate user with the database
+            User user = userDAO.authenticate(username, password);
+            if (user != null) {
+                // Close the login stage
+                primaryStage.close();
+
+                // Redirect based on the user's role and show the table
+                Stage tableStage = new Stage();
+                Table table = new Table();
+                table.showTable(tableStage, user.getRole().name());  // Use name() to pass the role enum as a string
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid login credentials.");
             }
         });
 
-        // Registration action
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loginFrame.dispose();  // Close login window
-                showRegistrationForm();
-            }
-        });
 
-        loginFrame.setVisible(true);
-    }
 
-    // Show registration form
-    private static void showRegistrationForm() {
-        JFrame registerFrame = new JFrame("Register");
-        registerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        registerFrame.setSize(300, 250);
-        registerFrame.setLayout(new GridLayout(5, 2));
 
-        // Registration form
-        JLabel userLabel = new JLabel("Username:");
-        JTextField userTextField = new JTextField(20);
 
-        JLabel passwordLabel = new JLabel("Password:");
-        JPasswordField passwordField = new JPasswordField(20);
-
-        JLabel roleLabel = new JLabel("Role:");
-        String[] roles = {"Medewerker", "User"};
-        JComboBox<String> roleComboBox = new JComboBox<>(roles);
-
-        JButton registerButton = new JButton("Register");
-
-        registerFrame.add(userLabel);
-        registerFrame.add(userTextField);
-        registerFrame.add(passwordLabel);
-        registerFrame.add(passwordField);
-        registerFrame.add(roleLabel);
-        registerFrame.add(roleComboBox);
-        registerFrame.add(new JLabel());  // Spacer
-        registerFrame.add(registerButton);
 
         // Register action
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = userTextField.getText();
-                String password = new String(passwordField.getPassword());
-                String role = (String) roleComboBox.getSelectedItem();
+        registerButton.setOnAction(e -> {
+            primaryStage.close();  // Close the login stage
+            showRegistrationForm();  // Show the registration form
+        });
 
-                // Check if the username already exists in the database
-                if (userDAO.findUserByUsername(username) != null) {
-                    JOptionPane.showMessageDialog(registerFrame, "Username already exists", "Registration Failed", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    // Add new user to the database
-                    userDAO.saveUser(new User(username, password, role));
-                    JOptionPane.showMessageDialog(registerFrame, "Registration successful", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    registerFrame.dispose();  // Close registration window
-                    main(null);  // Return to login
-                }
+        // Set the scene and show the login stage
+        Scene scene = new Scene(grid, 300, 200);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // Show registration form in a separate stage
+    private void showRegistrationForm() {
+        Stage registerStage = new Stage();
+        registerStage.setTitle("Register");
+
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        Label userLabel = new Label("Username:");
+        TextField userTextField = new TextField();
+
+        Label passwordLabel = new Label("Password:");
+        PasswordField passwordField = new PasswordField();
+
+        Button registerButton = new Button("Register");
+
+        grid.add(userLabel, 0, 0);
+        grid.add(userTextField, 1, 0);
+        grid.add(passwordLabel, 0, 1);
+        grid.add(passwordField, 1, 1);
+        grid.add(registerButton, 1, 3);
+
+        // Register action
+        registerButton.setOnAction(e -> {
+            String username = userTextField.getText();
+            String password = passwordField.getText();
+            User.Role role = User.Role.USER;  // Default role is User
+
+            if (userDAO.findUserByUsername(username) != null) {
+                showAlert(Alert.AlertType.ERROR, "Registration Failed", "Username already exists.");
+            } else {
+                userDAO.saveUser(new User(username, password, role));
+                showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "User registered successfully.");
+                registerStage.close();
+                start(new Stage());  // Go back to login page
             }
         });
 
-        registerFrame.setVisible(true);
+        Scene scene = new Scene(grid, 300, 250);
+        registerStage.setScene(scene);
+        registerStage.show();
+    }
+
+    // Utility method to show alerts
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    public static void main(String[] args) {
+        launch(args);  // Launch the JavaFX application
     }
 }
