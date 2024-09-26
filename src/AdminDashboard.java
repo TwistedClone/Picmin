@@ -1,10 +1,10 @@
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.util.List;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Insets;
 
 public class AdminDashboard {
 
@@ -21,31 +21,33 @@ public class AdminDashboard {
         VBox root = new VBox(10);
         root.setPadding(new Insets(10));
 
-        TableView<User> userTable = new TableView<>();
-        TableColumn<User, String> usernameCol = new TableColumn<>("Username");
-        TableColumn<User, String> roleCol = new TableColumn<>("Role");
-        userTable.getColumns().addAll(usernameCol, roleCol);
+        // Define columns for the user table
+        List<ColumnDefinition<User>> columns = List.of(
+                new ColumnDefinition<>("Username", User::getUsername),
+                new ColumnDefinition<>("Role", user -> user.getRole().name())  // Display role as a string
+        );
 
-        // Load users into the table
-        userTable.getItems().addAll(userDAO.getAllUsers());
-
-        // Cell value factories
-        usernameCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUsername()));
-        roleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getRole().name()));  // Use name() instead of getRoleName()
+        // Load users into the table using the generic Table class
+        List<User> users = userDAO.getAllUsers();
+        Table<User> userTable = new Table<>(columns, users);
+        userTable.setupTable(columns, users);  // Set up the table with users
 
         // Role change functionality
         Button changeRoleButton = new Button("Change Role");
         changeRoleButton.setOnAction(e -> {
-            User selectedUser = userTable.getSelectionModel().getSelectedItem();
+            User selectedUser = userTable.getSelectedItem();  // Get the selected user
             if (selectedUser != null) {
                 showRoleChangeDialog(selectedUser);
-                userTable.getItems().setAll(userDAO.getAllUsers());  // Refresh table
+                userTable.setupTable(columns, userDAO.getAllUsers());  // Refresh table
+            } else {
+                showAlert(Alert.AlertType.ERROR, "No Selection", "Please select a user to change the role.");
             }
         });
 
-        root.getChildren().addAll(userTable, changeRoleButton);
+        // Add TableView to the root and buttons
+        root.getChildren().addAll(userTable.tableView, changeRoleButton);
 
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

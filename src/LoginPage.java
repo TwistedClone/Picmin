@@ -47,19 +47,15 @@ public class LoginPage extends Application {
                 // Close the login stage
                 primaryStage.close();
 
-                // Redirect based on the user's role and show the table
+                // Redirect based on the user's role and show the FruitTable
                 Stage tableStage = new Stage();
-                Table table = new Table();
-                table.showTable(tableStage, user.getRole().name());  // Use name() to pass the role enum as a string
+                FruitManager fruitManager = new FruitManager();  // Create a fruit manager
+                FruitTable fruitTable = new FruitTable(tableStage, fruitManager.getFruits(), user);  // Pass the current user to the FruitTable
+                fruitTable.show();  // Show the fruit table after successful login
             } else {
                 showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid login credentials.");
             }
         });
-
-
-
-
-
 
         // Register action
         registerButton.setOnAction(e -> {
