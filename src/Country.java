@@ -3,10 +3,30 @@ import java.util.List;
 
 public class Country {
 
-    public static List<String> getAllCountries() {
+    private String name;
+
+    public Country(String name) {
+        this.name = name;
+    }
+
+    public String getCountryName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;  // or return city if you want to show the city instead
+    }
+
+    // Static method to get all countries
+    public static List<Country> getAllCountries() {
         return Arrays.asList(
-                "United States", "Canada", "Mexico", "United Kingdom", "Germany", "France",
-                "Netherlands", "China", "Japan", "India", "Brazil", "Australia", "New Zealand"
+                new Country("United States"), new Country("Canada"), new Country("Mexico"),
+                new Country("United Kingdom"), new Country("Germany"), new Country("France"),
+                new Country("Netherlands"), new Country("China"), new Country("Japan"),
+                new Country("India"), new Country("Brazil"), new Country("Australia"),
+                new Country("New Zealand")
         );
     }
 }
+

@@ -59,10 +59,35 @@ public class Table<T> extends Application {
         // Add columns dynamically
         for (ColumnDefinition<T> column : columns) {
             TableColumn<T, String> tableColumn = new TableColumn<>(column.getHeader());
+
+            // Set the value factory
             tableColumn.setCellValueFactory(cellData -> {
                 T item = cellData.getValue();
                 return new SimpleStringProperty(column.getValueFunction().apply(item));
             });
+
+            // Apply custom cell factory to handle coloring for the "Available" column
+            if (column.getHeader().equals("Available") || column.getHeader().equals("Beschikbaar")) {
+                tableColumn.setCellFactory(col -> new TableCell<T, String>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item != null && !empty) {
+                            setText(item);
+                            // Change text color based on the item value (green for "Yes", red for "No")
+                            if (item.equals("Yes") || item.equals("Admin Dashboard") || item.equals("Ja")) {
+                                setStyle("-fx-text-fill: green;");
+                            } else {
+                                setStyle("-fx-text-fill: red;");
+                            }
+                        } else {
+                            setText(null);
+                            setStyle("");
+                        }
+                    }
+                });
+            }
+
             tableColumn.setPrefWidth(100);
             tableView.getColumns().add(tableColumn);
         }
@@ -70,6 +95,7 @@ public class Table<T> extends Application {
         // Add data to the table
         tableView.getItems().setAll(items);
     }
+
 
     // Expose the selected item from the TableView
     public T getSelectedItem() {

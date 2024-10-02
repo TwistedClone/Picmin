@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 public class ProductEditScreen extends Application {
     private ProductManager productManager;
     private TextField nameField;
+    private FruitTable fruitTable;
     private TextField descriptionField;
     private Button saveButton;
     private Product selectedProduct;
@@ -40,6 +41,12 @@ public class ProductEditScreen extends Application {
         primaryStage.show();
     }
 
+    public ProductEditScreen(ProductManager productManager, FruitTable fruitTable) {
+        this.productManager = productManager;
+        this.fruitTable = fruitTable;
+    }
+
+
     private void saveProduct() {
         String name = nameField.getText();
         String description = descriptionField.getText();
@@ -58,6 +65,7 @@ public class ProductEditScreen extends Application {
         // Clear the fields after saving
         nameField.clear();
         descriptionField.clear();
+
     }
 
     public void editProduct(Product product) {
@@ -65,5 +73,6 @@ public class ProductEditScreen extends Application {
         nameField.setText(product.getName());
         descriptionField.setText(product.getDescription());
         saveButton.setText("Update Product");
+
     }
 }

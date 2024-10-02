@@ -9,21 +9,25 @@ import java.util.List;
 public class FruitDAO {
     private static final String DB_URL = "jdbc:sqlite:your_database.db";
 
-    // Constructor om de fruitentabel te maken als deze nog niet bestaat
+    // Constructor to create the fruits table if it doesn't exist
     public FruitDAO() {
-        createFruitsTable();  // Roep de methode aan om de fruits tabel te maken
+        createFruitsTable();  // Call the method to create the fruits table
     }
 
-    // Methode om de fruits tabel te maken
+    // Method to create the fruits table with product_id and location_id
     private void createFruitsTable() {
         String sql = "CREATE TABLE IF NOT EXISTS fruits (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +  // Uniek ID voor elke fruitinvoer
-                "name TEXT NOT NULL, " +  // Naam van het fruit
-                "available INTEGER NOT NULL, " +  // Beschikbaarheid
-                "origin TEXT NOT NULL, " +  // Land van herkomst
-                "current_stock INTEGER NOT NULL, " +  // Huidige voorraad
-                "product_id INTEGER, " +  // Added foreign key for product
-                "FOREIGN KEY (product_id) REFERENCES products(id));";  // Foreign key constraint to the products table
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "name TEXT NOT NULL, " +
+                "available INTEGER NOT NULL, " +
+                "origin TEXT NOT NULL, " +
+                "current_stock INTEGER NOT NULL, " +
+                "price REAL NOT NULL, " +  // Add price field
+                "product_id INTEGER, " +
+                "location_id INTEGER, " +
+                "FOREIGN KEY (product_id) REFERENCES products(id), " +
+                "FOREIGN KEY (location_id) REFERENCES locations(id)" +
+                ");";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -34,18 +38,20 @@ public class FruitDAO {
         }
     }
 
-    // Methode om een nieuw fruit op te slaan in de database
+    // Method to save a new fruit into the database
     public void saveFruit(Fruit fruit) {
-        String sql = "INSERT INTO fruits(name, available, origin, current_stock, product_id) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO fruits(name, available, origin, current_stock, price, product_id, location_id) VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, fruit.getName());
             pstmt.setInt(2, fruit.isAvailable() ? 1 : 0);
-            pstmt.setString(3, fruit.getOrigin());
+            pstmt.setString(3, fruit.getOrigin().getCountryName());  // Use Country's getCountryName() method
             pstmt.setInt(4, fruit.getCurrentStock());
-            pstmt.setInt(5, fruit.getProduct().getId());  // Save the product's ID
+            pstmt.setDouble(5, fruit.getPrice());  // Save the price
+            pstmt.setInt(6, fruit.getProduct().getId());
+            pstmt.setInt(7, fruit.getLocation().getId());
 
             pstmt.executeUpdate();
             System.out.println("Fruit saved successfully!");
@@ -55,20 +61,21 @@ public class FruitDAO {
         }
     }
 
-
-    // Methode om een bestaand fruit in de database bij te werken
+    // Method to update an existing fruit in the database
     public void updateFruit(Fruit fruit) {
-        String sql = "UPDATE fruits SET name = ?, available = ?, origin = ?, current_stock = ?, product_id = ? WHERE id = ?";
+        String sql = "UPDATE fruits SET name = ?, available = ?, origin = ?, current_stock = ?, price = ?, product_id = ?, location_id = ? WHERE id = ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, fruit.getName());
             pstmt.setInt(2, fruit.isAvailable() ? 1 : 0);
-            pstmt.setString(3, fruit.getOrigin());
+            pstmt.setString(3, fruit.getOrigin().getCountryName());  // Update origin as a string
             pstmt.setInt(4, fruit.getCurrentStock());
-            pstmt.setInt(5, fruit.getProduct().getId());  // Update the product's ID
-            pstmt.setInt(6, fruit.getId());
+            pstmt.setDouble(5, fruit.getPrice());  // Update the price
+            pstmt.setInt(6, fruit.getProduct().getId());  // Update the product's ID
+            pstmt.setInt(7, fruit.getLocation().getId());  // Update the location's ID
+            pstmt.setInt(8, fruit.getId());
 
             pstmt.executeUpdate();
             System.out.println("Fruit updated successfully!");
@@ -77,13 +84,13 @@ public class FruitDAO {
             System.out.println("Error updating fruit: " + e.getMessage());
         }
     }
-
-
-    // Methode om alle fruitgegevens uit de database op te halen
+    // Method to retrieve all fruit data from the database
     public List<Fruit> getFruits() {
         List<Fruit> fruits = new ArrayList<>();
-        String sql = "SELECT f.*, p.name AS product_name, p.description AS product_description FROM fruits f " +
-                "LEFT JOIN products p ON f.product_id = p.id";  // Join fruits with products
+        String sql = "SELECT f.*, p.name AS product_name, p.description AS product_description, " +
+                "l.name AS location_name, l.city AS location_city FROM fruits f " +
+                "LEFT JOIN products p ON f.product_id = p.id " +
+                "LEFT JOIN locations l ON f.location_id = l.id";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -93,8 +100,10 @@ public class FruitDAO {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
                 boolean available = rs.getInt("available") == 1;
-                String origin = rs.getString("origin");
+                String originName = rs.getString("origin");
+                Country origin = new Country(originName);  // Convert to Country object
                 int currentStock = rs.getInt("current_stock");
+                double price = rs.getDouble("price");  // Get the price
 
                 // Get product details
                 int productId = rs.getInt("product_id");
@@ -102,7 +111,13 @@ public class FruitDAO {
                 String productDescription = rs.getString("product_description");
                 Product product = new Product(productId, productName, productDescription);
 
-                fruits.add(new Fruit(id, name, available, origin, currentStock, product));
+                // Get location details
+                int locationId = rs.getInt("location_id");
+                String locationName = rs.getString("location_name");
+                String locationCity = rs.getString("location_city");
+                Location location = new Location(locationId, locationName, locationCity);
+
+                fruits.add(new Fruit(id, name, available, origin, currentStock, product, location, price));  // Add price to constructor
             }
 
         } catch (SQLException e) {
@@ -113,20 +128,19 @@ public class FruitDAO {
     }
 
 
-    // Methode om een fruit uit de database te verwijderen
+    // Method to delete a fruit from the database
     public void deleteFruit(int id) {
-        String sql = "DELETE FROM fruits WHERE id = ?";  // SQL-commando om een fruitinvoer te verwijderen op basis van het ID
+        String sql = "DELETE FROM fruits WHERE id = ?";  // SQL command to delete a fruit entry based on ID
 
-        // Maak verbinding met de database en verwijder het fruit met het opgegeven ID
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, id);  // Zet het fruit-ID in de SQL-query
-            pstmt.executeUpdate();  // Voer de SQL-update uit om het fruit te verwijderen
-            System.out.println("Fruit deleted successfully!");  // Bevestigingsbericht dat het fruit is verwijderd
+            pstmt.setInt(1, id);  // Set the fruit ID in the SQL query
+            pstmt.executeUpdate();  // Execute the SQL update to delete the fruit
+            System.out.println("Fruit deleted successfully!");
 
         } catch (SQLException e) {
-            System.out.println("Error deleting fruit: " + e.getMessage());  // Foutmelding bij het verwijderen van fruit
+            System.out.println("Error deleting fruit: " + e.getMessage());
         }
     }
 }

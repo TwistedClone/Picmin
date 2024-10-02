@@ -45,7 +45,6 @@ public class UserDAO {
         }
     }
 
-    // Authenticate the user by checking the username and password
     public User authenticate(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
@@ -57,8 +56,9 @@ public class UserDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                String role = rs.getString("role").toUpperCase();  // Convert the role to uppercase
-                return new User(username, password, User.Role.valueOf(role));
+                int id = rs.getInt("id");  // Retrieve the id from the result set
+                String role = rs.getString("role").toUpperCase();
+                return new User(id, username, password, User.Role.valueOf(role));  // Pass id to the User object
             }
 
         } catch (SQLException e) {
@@ -77,16 +77,18 @@ public class UserDAO {
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
+                int id = rs.getInt("id");  // Retrieve the id from the result set
                 String username = rs.getString("username");
                 String password = rs.getString("password");
-                String role = rs.getString("role").toUpperCase();  // Convert the role to uppercase
-                users.add(new User(username, password, User.Role.valueOf(role)));
+                String role = rs.getString("role").toUpperCase();
+                users.add(new User(id, username, password, User.Role.valueOf(role)));  // Pass id to the User object
             }
         } catch (SQLException e) {
             System.out.println("Error fetching users: " + e.getMessage());
         }
         return users;
     }
+
 
 
     // Update the role of a user
@@ -115,9 +117,10 @@ public class UserDAO {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
+                int id = rs.getInt("id");  // Retrieve the id from the result set
                 String password = rs.getString("password");
-                String role = rs.getString("role");
-                return new User(username, password, User.Role.valueOf(role));  // Convert role string back to enum
+                String role = rs.getString("role").toUpperCase();
+                return new User(id, username, password, User.Role.valueOf(role));  // Pass id to the User object
             }
 
         } catch (SQLException e) {
@@ -125,4 +128,5 @@ public class UserDAO {
         }
         return null;
     }
+
 }

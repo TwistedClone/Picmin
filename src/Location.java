@@ -33,4 +33,8 @@ public class Location {
         this.city = city;
     }
 
+    @Override
+    public String toString() {
+        return name + " " + city;  // or return city if you want to show the city instead
+    }
 }
