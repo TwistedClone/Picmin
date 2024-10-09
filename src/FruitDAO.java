@@ -14,7 +14,7 @@ public class FruitDAO {
         createFruitsTable();  // Call the method to create the fruits table
     }
 
-    // Method to create the fruits table with product_id and location_id
+    // Method to create the fruits table with category_id and location_id
     private void createFruitsTable() {
         String sql = "CREATE TABLE IF NOT EXISTS fruits (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -23,9 +23,9 @@ public class FruitDAO {
                 "origin TEXT NOT NULL, " +
                 "current_stock INTEGER NOT NULL, " +
                 "price REAL NOT NULL, " +  // Add price field
-                "product_id INTEGER, " +
+                "category_id INTEGER, " +
                 "location_id INTEGER, " +
-                "FOREIGN KEY (product_id) REFERENCES products(id), " +
+                "FOREIGN KEY (category_id) REFERENCES categorys(id), " +
                 "FOREIGN KEY (location_id) REFERENCES locations(id)" +
                 ");";
 
@@ -40,7 +40,7 @@ public class FruitDAO {
 
     // Method to save a new fruit into the database
     public void saveFruit(Fruit fruit) {
-        String sql = "INSERT INTO fruits(name, available, origin, current_stock, price, product_id, location_id) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO fruits(name, available, origin, current_stock, price, category_id, location_id) VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -50,7 +50,7 @@ public class FruitDAO {
             pstmt.setString(3, fruit.getOrigin().getCountryName());  // Use Country's getCountryName() method
             pstmt.setInt(4, fruit.getCurrentStock());
             pstmt.setDouble(5, fruit.getPrice());  // Save the price
-            pstmt.setInt(6, fruit.getProduct().getId());
+            pstmt.setInt(6, fruit.getCategory().getId());
             pstmt.setInt(7, fruit.getLocation().getId());
 
             pstmt.executeUpdate();
@@ -63,7 +63,7 @@ public class FruitDAO {
 
     // Method to update an existing fruit in the database
     public void updateFruit(Fruit fruit) {
-        String sql = "UPDATE fruits SET name = ?, available = ?, origin = ?, current_stock = ?, price = ?, product_id = ?, location_id = ? WHERE id = ?";
+        String sql = "UPDATE fruits SET name = ?, available = ?, origin = ?, current_stock = ?, price = ?, category_id = ?, location_id = ? WHERE id = ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -73,7 +73,7 @@ public class FruitDAO {
             pstmt.setString(3, fruit.getOrigin().getCountryName());  // Update origin as a string
             pstmt.setInt(4, fruit.getCurrentStock());
             pstmt.setDouble(5, fruit.getPrice());  // Update the price
-            pstmt.setInt(6, fruit.getProduct().getId());  // Update the product's ID
+            pstmt.setInt(6, fruit.getCategory().getId());  // Update the category's ID
             pstmt.setInt(7, fruit.getLocation().getId());  // Update the location's ID
             pstmt.setInt(8, fruit.getId());
 
@@ -87,9 +87,9 @@ public class FruitDAO {
     // Method to retrieve all fruit data from the database
     public List<Fruit> getFruits() {
         List<Fruit> fruits = new ArrayList<>();
-        String sql = "SELECT f.*, p.name AS product_name, p.description AS product_description, " +
+        String sql = "SELECT f.*, p.name AS category_name, p.description AS category_description, " +
                 "l.name AS location_name, l.city AS location_city FROM fruits f " +
-                "LEFT JOIN products p ON f.product_id = p.id " +
+                "LEFT JOIN categorys p ON f.category_id = p.id " +
                 "LEFT JOIN locations l ON f.location_id = l.id";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -105,11 +105,11 @@ public class FruitDAO {
                 int currentStock = rs.getInt("current_stock");
                 double price = rs.getDouble("price");  // Get the price
 
-                // Get product details
-                int productId = rs.getInt("product_id");
-                String productName = rs.getString("product_name");
-                String productDescription = rs.getString("product_description");
-                Product product = new Product(productId, productName, productDescription);
+                // Get category details
+                int categoryId = rs.getInt("category_id");
+                String categoryName = rs.getString("category_name");
+                String categoryDescription = rs.getString("category_description");
+                Category category = new Category(categoryId, categoryName, categoryDescription);
 
                 // Get location details
                 int locationId = rs.getInt("location_id");
@@ -117,7 +117,7 @@ public class FruitDAO {
                 String locationCity = rs.getString("location_city");
                 Location location = new Location(locationId, locationName, locationCity);
 
-                fruits.add(new Fruit(id, name, available, origin, currentStock, product, location, price));  // Add price to constructor
+                fruits.add(new Fruit(id, name, available, origin, currentStock, category, location, price));  // Add price to constructor
             }
 
         } catch (SQLException e) {

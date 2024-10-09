@@ -54,11 +54,11 @@ public class ShoppingCartDAO {
         List<ShoppingCart> cartItems = new ArrayList<>();
         String sql = "SELECT sc.id, sc.quantity, sc.total_price, " +
                 "f.id AS fruit_id, f.name AS fruit_name, f.price AS fruit_price, f.available, " +
-                "f.origin, f.current_stock, p.id AS product_id, p.name AS product_name, " +
+                "f.origin, f.current_stock, p.id AS category_id, p.name AS category_name, " +
                 "l.id AS location_id, l.name AS location_name " +
                 "FROM shopping_cart sc " +
                 "JOIN fruits f ON sc.fruit_id = f.id " +
-                "JOIN products p ON f.product_id = p.id " +
+                "JOIN categorys p ON f.category_id = p.id " +
                 "JOIN locations l ON f.location_id = l.id " +
                 "WHERE sc.user_id = ?";  // Query only for the current user's cart
 
@@ -81,10 +81,10 @@ public class ShoppingCartDAO {
                 String originName = rs.getString("origin");
                 int currentStock = rs.getInt("current_stock");
 
-                // Get Product and Location details
-                int productId = rs.getInt("product_id");
-                String productName = rs.getString("product_name");
-                Product product = new Product(productId, productName, ""); // Assuming you have a Product constructor
+                // Get Category and Location details
+                int categoryId = rs.getInt("category_id");
+                String categoryName = rs.getString("category_name");
+                Category category = new Category(categoryId, categoryName, ""); // Assuming you have a Category constructor
 
                 int locationId = rs.getInt("location_id");
                 String locationName = rs.getString("location_name");
@@ -92,7 +92,7 @@ public class ShoppingCartDAO {
 
                 // Create a Fruit object
                 Country origin = new Country(originName);
-                Fruit fruit = new Fruit(fruitId, fruitName, available, origin, currentStock, product, location, fruitPrice);
+                Fruit fruit = new Fruit(fruitId, fruitName, available, origin, currentStock, category, location, fruitPrice);
 
                 // Create a ShoppingCart object
                 ShoppingCart cartItem = new ShoppingCart(fruit, quantity, totalPrice, user);

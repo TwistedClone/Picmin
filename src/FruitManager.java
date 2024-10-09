@@ -13,13 +13,13 @@ public class FruitManager {
     }
 
     // Bewerk een bestaande fruit
-    public void updateFruit(Fruit fruit, String name, boolean isAvailable, String origin, int currentStock, Product product, Location location) {
+    public void updateFruit(Fruit fruit, String name, boolean isAvailable, String origin, int currentStock, Category category, Location location) {
         fruit.setName(name);
         fruit.setAvailable(isAvailable);
         Country country = new Country(origin);  // Assuming the String is the name of the country
         fruit.setOrigin(country);
         fruit.setCurrentStock(currentStock);
-        fruit.setProduct(product);  // Update the product
+        fruit.setCategory(category);  // Update the category
         fruit.setLocation(location);
         fruitDAO.updateFruit(fruit);
     }

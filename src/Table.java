@@ -47,7 +47,7 @@ public class Table<T> extends Application {
         root.getChildren().clear();
         root.getChildren().add(tableView);
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1200, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

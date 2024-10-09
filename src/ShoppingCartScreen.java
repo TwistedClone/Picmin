@@ -58,6 +58,7 @@ public class ShoppingCartScreen {
                 .mapToInt(ShoppingCart::getQuantity)
                 .sum();
 
+
         // Display the total price and quantity
         Label totalPriceLabel = new Label("Total Price: " + totalPrice);
         Label totalQuantityLabel = new Label("Total Quantity: " + totalQuantity);

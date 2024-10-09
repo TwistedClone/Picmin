@@ -15,29 +15,29 @@ public class DatabaseManager {
             try (Connection conn = connect();  // Connect to the database
                  Statement stmt = conn.createStatement()) {
                 if (conn != null) {
-                    // Create the Fruits table with foreign key references to products and locations
+                    // Create the Fruits table with foreign key references to categorys and locations
                     String createFruitsTableSQL = "CREATE TABLE IF NOT EXISTS Fruits ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"  // Auto-incrementing id field
                             + "name TEXT NOT NULL,"
                             + "available INTEGER NOT NULL,"
                             + "origin TEXT NOT NULL,"
                             + "stock INTEGER NOT NULL,"
-                            + "product_id INTEGER,"  // Foreign key for products
+                            + "category_id INTEGER,"  // Foreign key for categorys
                             + "location_id INTEGER,"  // Foreign key for locations
-                            + "FOREIGN KEY (product_id) REFERENCES products(id),"
+                            + "FOREIGN KEY (category_id) REFERENCES categorys(id),"
                             + "FOREIGN KEY (location_id) REFERENCES locations(id)"
                             + ");";
                     stmt.execute(createFruitsTableSQL);  // Create the Fruits Table
                     System.out.println("Fruits table has been initialized.");
 
-                    // Optionally, create the Products table if it doesn't already exist
-                    String createProductsTableSQL = "CREATE TABLE IF NOT EXISTS products ("
+                    // Optionally, create the Categories table if it doesn't already exist
+                    String createCategoriesTableSQL = "CREATE TABLE IF NOT EXISTS categorys ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                             + "name TEXT NOT NULL, "
                             + "description TEXT"
                             + ");";
-                    stmt.execute(createProductsTableSQL);  // Create the Products Table
-                    System.out.println("Products table has been initialized.");
+                    stmt.execute(createCategoriesTableSQL);  // Create the Categories Table
+                    System.out.println("Categories table has been initialized.");
 
                     // Optionally, create the Locations table if it doesn't already exist
                     String createLocationsTableSQL = "CREATE TABLE IF NOT EXISTS locations ("
