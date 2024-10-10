@@ -1,6 +1,6 @@
-***Picmin***
+***Picit***
 
-Picmin is een applicatie die gebruikers in staat stelt om fruit te beheren en te kopen. De applicatie biedt twee rollen: "Medewerker" en "Gebruiker". Medewerkers kunnen fruit toevoegen, bewerken en verwijderen, terwijl gebruikers fruit kunnen bekijken en toevoegen aan hun winkelwagen.
+Picit is een applicatie die gebruikers in staat stelt om fruit te beheren en te kopen. De applicatie biedt twee rollen: "Medewerker" en "Gebruiker". Medewerkers kunnen fruit toevoegen, bewerken en verwijderen, terwijl gebruikers fruit kunnen bekijken en toevoegen aan hun winkelwagen.
 Functionaliteiten
 1. Rollen
 
@@ -31,7 +31,7 @@ Installatie
 
     bash
 
-    git clone https://github.com/jouw-gebruikersnaam/picmin.git
+    git clone https://github.com/jouw-gebruikersnaam/Picit.git
 
     Open het project in je IDE: Zorg ervoor dat je een Java-ontwikkelomgeving hebt geïnstalleerd (bijv. IntelliJ IDEA).
 
