@@ -66,3 +66,5 @@ De applicatie gebruikt SQLite om fruit- en gebruikersgegevens op te slaan. De da
 
     Users: Bevat gebruikersgegevens (gebruikersnaam, wachtwoord, rol).
     Fruits: Bevat fruitgegevens (naam, herkomst, voorraad, beschikbaarheid).
+    Locations: Bevat locatiegegevens (naam, stad)
+    Categories: Bevat categoriegegevens(naam, beschrijving)
