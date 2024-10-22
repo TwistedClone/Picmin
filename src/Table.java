@@ -7,7 +7,6 @@ import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class Table<T> extends Application {
 
@@ -48,6 +47,7 @@ public class Table<T> extends Application {
         root.getChildren().add(tableView);
 
         Scene scene = new Scene(root, 1200, 800);
+        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

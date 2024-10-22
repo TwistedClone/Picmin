@@ -1,0 +1,128 @@
+/* General styling for the table */
+.table-view {
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-background-color: rgba(255, 255, 255, 0.8); /* Less transparent, more solid */
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.2, 0, 0); /* Slightly sharper shadow */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.2, 0, 0); /* Slightly sharper shadow */
+    -fx-padding: 10;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Font family for a modern look */
+}
+
+/* Styling for table rows */
+.table-row-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.9); /* More solid background */
+    -fx-border-width: 0;
+    -fx-padding: 3;
+    -fx-text-fill: #333333;
+}
+
+/* Styling for even rows */
+.table-row-cell:odd {
+    -fx-background-color: rgba(245, 245, 245, 0.9); /* Slightly darker background for even rows */
+}
+
+.table-row-cell:filled:selected, .table-row-cell:focused:selected {
+    -fx-background-color: rgba(0,0,0, 0.3); /* Slightly darker highlight */
+    -fx-text-fill: #333333;
+}
+
+/* Styling for table headers */
+.table-column-header {
+    -fx-background-color: rgba(64, 224, 208, 0.8); /* Turquoise background for headers */
+    -fx-text-fill: #ffffff; /* White text for better contrast */
+    -fx-font-weight: bold;
+    -fx-border-width: 0;
+    -fx-font-size: 15px; /* Slightly larger font for modern look */
+    -fx-padding: 10 15; /* Balanced padding */
+    -fx-background-radius: 8; /* Rounded corners for modern effect */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 8, 0.2, 0, 0); /* Softer shadow for floating effect */
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Modern font family */
+}
+
+
+/* Button styling */
+.button {
+    -fx-background-color: rgba(245, 245, 245, 0.9); /* Softer solid background */
+    -fx-background-radius: 10;
+    -fx-text-fill: #333333;
+    -fx-font-size: 14px;
+    -fx-padding: 8 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0.2, 0, 0); /* Subtle shadow */
+    -fx-transition: all 0.2s ease; /* Smooth transition for hover effect */
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Modern font family */
+}
+
+.button:hover {
+    -fx-background-color: rgba(64, 224, 208, 0.7); /* Turquoise accent color on hover */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.3, 0, 0); /* Increased shadow on hover */
+    -fx-transition: all 0.2s ease; /* Smooth transition */
+}
+
+/* TextField styling */
+.text-field {
+    -fx-background-color: rgba(255, 255, 255, 0.9); /* Less transparent */
+    -fx-border-color: rgba(0, 0, 0, 0.1); /* Subtle border */
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+    -fx-text-fill: #333333;
+    -fx-prompt-text-fill: rgba(51, 51, 51, 0.6); /* Slightly transparent prompt text */
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Font family for input text */
+}
+
+.text-field:focused {
+    -fx-background-color: rgba(255, 255, 255, 1); /* Solid background when focused */
+    -fx-border-color: rgba(64, 224, 208, 0.7); /* Turquoise border when focused */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 255, 0.2), 10, 0.5, 0, 0); /* Subtle glow effect on focus */
+}
+
+/* Styling for ComboBox (Dropdown) */
+.combo-box {
+    -fx-background-color: rgba(245, 245, 245, 0.9); /* Softer solid background */
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-text-fill: #333333;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Font family */
+}
+
+.combo-box:hover {
+    -fx-border-color: rgba(64, 224, 208, 0.7); /* Turquoise border on hover */
+}
+
+/* Styling for the dropdown list (Popup) */
+.combo-box-popup {
+    -fx-background-color: rgba(255, 255, 255, 1); /* Solid white for dropdown */
+    -fx-border-radius: 10; /* Rounded corners */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.5, 0, 0); /* Soft shadow */
+    -fx-padding: 5;
+}
+
+/* Styling for individual list cells inside the ComboBox */
+.combo-box .list-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.9); /* Solid background for dropdown items */
+    -fx-text-fill: #333333; /* Dark text */
+    -fx-padding: 10 15; /* Add padding for spacing */
+    -fx-background-radius: 8; /* Rounded corners */
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Font family */
+}
+
+.combo-box .list-cell:hover {
+    -fx-background-color: rgba(64, 224, 208, 0.7); /* Turquoise hover effect */
+    -fx-text-fill: #ffffff; /* White text on hover */
+}
+
+/* Styling for the selected item in the ComboBox list */
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: rgba(64, 224, 208, 0.7); /* Turquoise background when selected */
+    -fx-text-fill: #ffffff; /* White text when selected */
+}
+
+/* Styling for the root layout (overall background) */
+.root {
+    -fx-background-color: rgba(255, 255, 255, 0.95); /* Almost solid background for cleaner look */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 20, 0.2, 0, 0); /* Sharper shadow for floating effect */
+    -fx-padding: 20;
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Apply globally to root for modern text */
+}

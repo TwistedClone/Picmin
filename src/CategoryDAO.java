@@ -5,14 +5,14 @@ import java.util.List;
 public class CategoryDAO {
     private static final String DB_URL = "jdbc:sqlite:your_database.db";  // Path to your database
 
-    // Constructor to create the categorys table if it doesn't exist
+    // Constructor to create the categories table if it doesn't exist
     public CategoryDAO() {
         createCategoriesTable();
     }
 
-    // Method to create the categorys table
+    // Method to create the categories table
     private void createCategoriesTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS categorys (" +
+        String sql = "CREATE TABLE IF NOT EXISTS categories (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "name TEXT NOT NULL, " +
                 "description TEXT);";
@@ -24,14 +24,14 @@ public class CategoryDAO {
             System.out.println("Categories table created or already exists.");
 
         } catch (SQLException e) {
-            System.out.println("Error creating categorys table: " + e.getMessage());
+            System.out.println("Error creating categories table: " + e.getMessage());
         }
     }
 
-    // Fetch all categorys from the database
+    // Fetch all categories from the database
     public List<Category> getAllCategories() {
-        List<Category> categorys = new ArrayList<>();
-        String query = "SELECT * FROM categorys";  // SQL query to get all categorys
+        List<Category> categories = new ArrayList<>();
+        String query = "SELECT * FROM categories";  // SQL query to get all categories
 
         try (Connection connection = DriverManager.getConnection(DB_URL);
              Statement stmt = connection.createStatement();
@@ -43,19 +43,19 @@ public class CategoryDAO {
                         rs.getString("name"),
                         rs.getString("description")
                 );
-                categorys.add(category);
+                categories.add(category);
             }
 
         } catch (SQLException e) {
-            System.out.println("Error fetching categorys: " + e.getMessage());
+            System.out.println("Error fetching categories: " + e.getMessage());
         }
 
-        return categorys;
+        return categories;
     }
 
     // Add a new category to the database
     public void addCategory(Category category) {
-        String query = "INSERT INTO categorys (name, description) VALUES (?, ?)";
+        String query = "INSERT INTO categories (name, description) VALUES (?, ?)";
 
         try (Connection connection = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -73,7 +73,7 @@ public class CategoryDAO {
 
     // Update an existing category
     public void updateCategory(Category category) {
-        String query = "UPDATE categorys SET name = ?, description = ? WHERE id = ?";
+        String query = "UPDATE categories SET name = ?, description = ? WHERE id = ?";
 
         try (Connection connection = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -92,7 +92,7 @@ public class CategoryDAO {
 
     // Delete a category by ID
     public void deleteCategory(int categoryId) {
-        String query = "DELETE FROM categorys WHERE id = ?";
+        String query = "DELETE FROM categories WHERE id = ?";
 
         try (Connection connection = DriverManager.getConnection(DB_URL);
              PreparedStatement pstmt = connection.prepareStatement(query)) {

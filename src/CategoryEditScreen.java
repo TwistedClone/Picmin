@@ -37,6 +37,7 @@ public class CategoryEditScreen extends Application {
         inputPanel.getChildren().addAll(nameLabel, nameField, descriptionLabel, descriptionField, saveButton);
 
         Scene scene = new Scene(inputPanel, 400, 200);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
     }

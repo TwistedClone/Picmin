@@ -58,7 +58,7 @@ public class ShoppingCartDAO {
                 "l.id AS location_id, l.name AS location_name " +
                 "FROM shopping_cart sc " +
                 "JOIN fruits f ON sc.fruit_id = f.id " +
-                "JOIN categorys p ON f.category_id = p.id " +
+                "JOIN categories p ON f.category_id = p.id " +
                 "JOIN locations l ON f.location_id = l.id " +
                 "WHERE sc.user_id = ?";  // Query only for the current user's cart
 

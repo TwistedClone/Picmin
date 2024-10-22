@@ -15,23 +15,23 @@ public class DatabaseManager {
             try (Connection conn = connect();  // Connect to the database
                  Statement stmt = conn.createStatement()) {
                 if (conn != null) {
-                    // Create the Fruits table with foreign key references to categorys and locations
+                    // Create the Fruits table with foreign key references to categories and locations
                     String createFruitsTableSQL = "CREATE TABLE IF NOT EXISTS Fruits ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"  // Auto-incrementing id field
                             + "name TEXT NOT NULL,"
                             + "available INTEGER NOT NULL,"
                             + "origin TEXT NOT NULL,"
                             + "stock INTEGER NOT NULL,"
-                            + "category_id INTEGER,"  // Foreign key for categorys
+                            + "category_id INTEGER,"  // Foreign key for categories
                             + "location_id INTEGER,"  // Foreign key for locations
-                            + "FOREIGN KEY (category_id) REFERENCES categorys(id),"
+                            + "FOREIGN KEY (category_id) REFERENCES categories(id),"
                             + "FOREIGN KEY (location_id) REFERENCES locations(id)"
                             + ");";
                     stmt.execute(createFruitsTableSQL);  // Create the Fruits Table
                     System.out.println("Fruits table has been initialized.");
 
                     // Optionally, create the Categories table if it doesn't already exist
-                    String createCategoriesTableSQL = "CREATE TABLE IF NOT EXISTS categorys ("
+                    String createCategoriesTableSQL = "CREATE TABLE IF NOT EXISTS categories ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                             + "name TEXT NOT NULL, "
                             + "description TEXT"

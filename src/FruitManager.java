@@ -3,9 +3,12 @@ import java.util.List;
 public class FruitManager {
     private FruitDAO fruitDAO;
 
+    // Deze class is niet meer in gebruik, alles valt nu direct op de fruitDAO
+
     public FruitManager() {
         this.fruitDAO = new FruitDAO();
     }
+
 
     // Voeg een nieuwe fruit toe
     public void addFruit(Fruit fruit) {

@@ -25,7 +25,7 @@ public class FruitDAO {
                 "price REAL NOT NULL, " +  // Add price field
                 "category_id INTEGER, " +
                 "location_id INTEGER, " +
-                "FOREIGN KEY (category_id) REFERENCES categorys(id), " +
+                "FOREIGN KEY (category_id) REFERENCES categories(id), " +
                 "FOREIGN KEY (location_id) REFERENCES locations(id)" +
                 ");";
 
@@ -89,7 +89,7 @@ public class FruitDAO {
         List<Fruit> fruits = new ArrayList<>();
         String sql = "SELECT f.*, p.name AS category_name, p.description AS category_description, " +
                 "l.name AS location_name, l.city AS location_city FROM fruits f " +
-                "LEFT JOIN categorys p ON f.category_id = p.id " +
+                "LEFT JOIN categories p ON f.category_id = p.id " +
                 "LEFT JOIN locations l ON f.location_id = l.id";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);

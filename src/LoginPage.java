@@ -49,8 +49,8 @@ public class LoginPage extends Application {
 
                 // Redirect based on the user's role and show the FruitTable
                 Stage tableStage = new Stage();
-                FruitManager fruitManager = new FruitManager();  // Create a fruit manager
-                FruitTable fruitTable = new FruitTable(tableStage, fruitManager.getFruits(), user);  // Pass the current user to the FruitTable
+                FruitDAO fruitDAO = new FruitDAO();  // Create a fruit DAO
+                FruitTable fruitTable = new FruitTable(tableStage, fruitDAO.getFruits(), user);  // Pass the current user to the FruitTable
                 fruitTable.show();  // Show the fruit table after successful login
             } else {
                 showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid login credentials.");
@@ -65,6 +65,8 @@ public class LoginPage extends Application {
 
         // Set the scene and show the login stage
         Scene scene = new Scene(grid, 300, 200);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }

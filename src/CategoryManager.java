@@ -17,7 +17,7 @@ public class CategoryManager {
         categoryDAO.updateCategory(category);
     }
 
-    // Get all categorys
+    // Get all categories
     public List<Category> getCategories() {
         return categoryDAO.getAllCategories();
     }

@@ -48,6 +48,8 @@ public class AdminDashboard {
         root.getChildren().addAll(userTable.tableView, changeRoleButton);
 
         Scene scene = new Scene(root, 800, 600);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -79,6 +81,8 @@ public class AdminDashboard {
         vbox.getChildren().addAll(new Label("Select new role:"), roleComboBox, saveButton);
 
         Scene scene = new Scene(vbox, 200, 150);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
         dialogStage.setScene(scene);
         dialogStage.showAndWait();
     }
