@@ -38,20 +38,6 @@ public class FruitTable extends BaseView {
         this.currentUser = currentUser;
         this.shoppingCartManager = new ShoppingCartManager(currentUser);  // Initialize the shopping cart manager
     }
-
-    private void handleLogout() {
-        // Close the current window (this would log the user out)
-        stage.close();
-
-        // Redirect to the login page
-        LoginPage loginPage = new LoginPage();
-        try {
-            Stage loginStage = new Stage();
-            loginPage.start(loginStage);  // Show the login page
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     @Override
     public void show() {
         // Define columns for the fruit table
@@ -62,7 +48,7 @@ public class FruitTable extends BaseView {
                 new ColumnDefinition<>("Stock", fruit -> String.valueOf(fruit.getCurrentStock())),
                 new ColumnDefinition<>("Category", fruit -> fruit.getCategory().getName()),
                 new ColumnDefinition<>("Location", fruit -> fruit.getLocation().getName()),
-                new ColumnDefinition<>("Price/pc", fruit -> String.valueOf(fruit.getPrice()))
+                new ColumnDefinition<>("Price/Qty", fruit -> String.valueOf(fruit.getPrice()))
         ));
 
         root.setPadding(new Insets(10));
@@ -155,8 +141,7 @@ public class FruitTable extends BaseView {
         });
 
         Scene scene = new Scene(root, 1200, 700);
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-        stage.setScene(scene);
+        setScene(scene);
         stage.show();
     }
 
@@ -364,6 +349,7 @@ public class FruitTable extends BaseView {
         }
     }
 
+
     // Filter fruits based on search term
     private List<Fruit> filterFruits(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
@@ -373,15 +359,9 @@ public class FruitTable extends BaseView {
         return fruits.stream()
                 .filter(fruit -> fruit.getName().toLowerCase().contains(lowerCaseTerm) ||
                         fruit.getOrigin().getCountryName().toLowerCase().contains(lowerCaseTerm) ||
-                        fruit.getCategory().getName().toLowerCase().contains(lowerCaseTerm))
+                        fruit.getCategory().getName().toLowerCase().contains(lowerCaseTerm) ||
+                        fruit.getLocation().getName().toLowerCase().contains(lowerCaseTerm))
                 .toList();
     }
 
-    // Show an alert dialog
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
 }

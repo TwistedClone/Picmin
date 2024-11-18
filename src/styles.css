@@ -1,7 +1,7 @@
 /* General styling for the table */
 .table-view {
     -fx-border-color: rgba(0, 0, 0, 0.1);
-    -fx-background-color: rgba(255, 255, 255, 0.8); /* Less transparent, more solid */
+    -fx-background-color: rgba(180, 180, 180, 0.6); /* Less transparent, more solid */
     -fx-background-radius: 10;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.2, 0, 0); /* Slightly sharper shadow */
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.2, 0, 0); /* Slightly sharper shadow */
@@ -23,7 +23,7 @@
 }
 
 .table-row-cell:filled:selected, .table-row-cell:focused:selected {
-    -fx-background-color: rgba(0,0,0, 0.3); /* Slightly darker highlight */
+    -fx-background-color: rgba(50,50,50, 0.1); /* Slightly darker highlight */
     -fx-text-fill: #333333;
 }
 
@@ -121,7 +121,7 @@
 
 /* Styling for the root layout (overall background) */
 .root {
-    -fx-background-color: rgba(255, 255, 255, 0.95); /* Almost solid background for cleaner look */
+    -fx-background-color: rgba(200, 200, 200, 0.95); /* Almost solid background for cleaner look */
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 20, 0.2, 0, 0); /* Sharper shadow for floating effect */
     -fx-padding: 20;
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif; /* Apply globally to root for modern text */

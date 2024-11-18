@@ -50,8 +50,15 @@ public class LocationDashboard {
             }
         });
 
+        Button addLocationButton = new Button("Add Location");
+        addLocationButton.setOnAction(e -> {
+            showAddLocationDialog();
+            locationTable.setupTable(columns, locationDAO.getAllLocations());  // Refresh table after adding
+        });
+
+
         // Add TableView to the root and buttons
-        root.getChildren().addAll(locationTable.tableView, editLocationButton, deleteLocationButton);
+        root.getChildren().addAll(locationTable.tableView, editLocationButton, deleteLocationButton, addLocationButton);
 
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
@@ -59,6 +66,45 @@ public class LocationDashboard {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+    private void showAddLocationDialog() {
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Add New Location");
+
+        VBox vbox = new VBox(10);
+        vbox.setPadding(new Insets(10));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Enter location name");
+
+        TextArea cityField = new TextArea();
+        cityField.setPromptText("Enter city");
+
+        Button addButton = new Button("Add");
+        addButton.setOnAction(e -> {
+            String name = nameField.getText();
+            String city = cityField.getText();
+
+            if (!name.isEmpty() && !city.isEmpty()) {
+                // Assuming the ID is generated automatically, we can pass 0 as a placeholder
+                Location newLocation = new Location(0, name, city);
+                locationDAO.addLocation(newLocation);  // Add location to the database
+                dialogStage.close();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Invalid Input", "Please fill in both fields.");
+            }
+        });
+
+        vbox.getChildren().addAll(new Label("Location Name:"), nameField,
+                new Label("City:"), cityField, addButton);
+
+        Scene scene = new Scene(vbox, 300, 200);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
+    }
+
 
     private void showEditLocationDialog(Location location) {
         Stage dialogStage = new Stage();
@@ -91,6 +137,7 @@ public class LocationDashboard {
         dialogStage.setScene(scene);
         dialogStage.showAndWait();
     }
+
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
